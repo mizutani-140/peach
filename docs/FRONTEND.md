@@ -275,7 +275,16 @@ node frontend/scripts/i18n-extract.mjs
 ```
 
 原文按渲染形状收：空白折叠，模板与 JSX 表达式写成 `{0}`，HTML 片段按标签切开。缺项照原文作键补进 `ja.json`，
-译文保留全部占位符（`test/i18n.test.ts` 检查）。服务端返回的提示与数据不在清单里。
+译文保留全部占位符（`test/i18n.test.ts` 检查）。
+
+服务端写进响应的提示、标签与错误也查同一张表，改了 `src/peach` 的文案后列出缺译：
+
+```powershell
+python -X utf8 scripts/i18n_server_strings.py
+```
+
+它用 `ast` 收含汉字的字符串与 `resources/media-sources.json` 的来源名称，形状同上；文档字符串、日志与终端输出、正则不收。
+词表、番号规则、站点解析等模块里的中文是馆藏数据，列在脚本的 `DATA_MODULES` 里不收，译了会把标签等数据在页面上一起换掉；托盘与命令行的文字不进浏览器。
 
 ## 界面标注
 

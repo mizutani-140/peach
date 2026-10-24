@@ -688,7 +688,8 @@ Python 复用 MIT 许可的 [Ruff](https://docs.astral.sh/ruff/) 0.17.0，版本
 
 日文界面复用浏览器原生 `MutationObserver`、`TreeWalker` 与 `@font-face` 的 `local()`，原文清单复用已固定的开发依赖 `oxc-parser@0.154.0`（MIT），不新增运行时依赖；`src/i18n/` 只保留原文查表、句式匹配与 React 文本节点的原文登记，用法见 `docs/FRONTEND.md`「界面语言」。
 i18next、react-intl 与 react-aria 的 `LocalizedStringFormatter` 都按键取文，要把约 4,200 处中文字面量改成调用，主界面里壳模板与 React 两套写法还得各接一遍，上游每次改文案都会冲突，未采用。
-translate.js 一类 DOM 机翻库默认把页面文字发给在线翻译服务，与馆藏隐私边界冲突，未采用。译文表 2026-10-25 按当时源码收齐 2,965 条，由智能体按统一术语表翻译，未经人工校对；服务端返回的中文提示不在范围内。
+translate.js 一类 DOM 机翻库默认把页面文字发给在线翻译服务，与馆藏隐私边界冲突，未采用。译文表 2026-10-25 按当时源码收齐前端原文与服务端写进响应的原文，由智能体按统一术语表翻译，未经人工校对。
+服务端原文清单 `scripts/i18n_server_strings.py` 复用 Python 标准库 `ast`（PSF），不新增依赖；词表与站点解析模块的中文是数据，不进译文表。
 隔离验证用 vitest 覆盖查表、整段文本节点与属性的原位翻译，并在临时空库的本机服务上逐页核对。无生产入口或真实 ledger 写入。
 
 ## 原位改字
