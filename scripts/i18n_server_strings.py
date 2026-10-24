@@ -38,17 +38,17 @@ def normalize(text: str) -> str:
     return " ".join(text.split())
 
 
+def _renumber(key: str) -> str:
+    """每一段的占位符从 `{0}` 重新编号，和运行时按文本节点查表的粒度一致。"""
+    counter = iter(range(len(key)))
+    return re.sub(r"\{\d+\}", lambda _: f"{{{next(counter)}}}", key)
+
+
 def split_markup(text: str) -> list[str]:
     """同 `i18n-extract.mjs` 的 `splitMarkup`：标签之间的正文与标签里的可读属性值各成一键。"""
     keys = [attribute.group(2) for tag in TAG.finditer(text) for attribute in ATTRIBUTES.finditer(tag.group(0))]
     keys += [part[part.rfind(">") + 1:].split("<")[0] for part in TAG.split(text)]
-    result = []
-    for key in keys:
-        counter = iter(range(len(key)))
-        key = normalize(re.sub(r"\{\d+\}", lambda _: f"{{{next(counter)}}}", key))
-        if HAN.search(key):
-            result.append(key)
-    return result
+    return [key for key in (normalize(_renumber(key)) for key in keys) if HAN.search(key)]
 
 
 def _docstrings(tree: ast.AST) -> set[int]:
