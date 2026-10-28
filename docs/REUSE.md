@@ -1,5 +1,25 @@
 # 复用清单
 
+## 首页筛选聚合与缓存
+
+采用 bbingz 的 [PR #205](https://github.com/peach-mitao/peach/pull/205)，固定来源提交 `bbf5aac8e9562211c324c2019bff35888266df84`，许可证沿用本项目 AGPL-3.0-or-later。作品筛选集合先在独立子查询中求出，创作者、标签和演员按既有关系聚合，保留去重计数与标签可见性。没有选中标签时移除无效 `tag_match`，复用既有修订缓存、同键锁与跨连接写入失效机制，不在线改写 SQLite 统计或增加索引迁移。
+
+## 混合媒体根与模型读取
+
+馆藏采集复用 `platform.within_root` 的 SMB 根身份判断，本地路径保留字面归属比较，不逐影片访问挂载目录。STRM 是链接文件，其大小和推广名不作为远端影片的垃圾证据；垃圾队列读取时重新评分，既有人工决定与回收站记录保持原样。
+
+YuNet 与 SFace 沿用既有模型哈希校验，Python 读取模型字节后交给 OpenCV 的 ONNX buffer 入口，避免 Windows 原生文件读取对非 ASCII 路径的限制。没有新增模型副本、依赖或路径重试。隔离验证用同一哈希的模型分别从普通路径与中文路径加载，并用合成数组执行检测和特征计算。
+
+## 浏览器添加的本地人物资料
+
+`/api/jav-browser/people` 复用现有专用令牌与浏览器权限检查、规范实体关联和男优排除判据。人物名只读本地账本与发现资料快照，头像通过既有 `PreviewService.entity_image` 查找已安装文件；已有 Pillow 将其在内存缩为 64px JPEG，不落新头像、不抓外站。未初始化发现资料服务时直接读取快照，避免初始化恢复外站任务。缺头像省略图片字段，缺人物信息返回空数组，接口失败与正常缺失分别反馈。用户脚本显示灰底首字母，不显示作品封面，无新增依赖。
+
+## README Star 图
+
+复用 [Star Chart](https://github.com/leereilly/star-chart) 的稳定版 v0.3，固定提交 `e7fa78bdf8f78da6c3feeb3a97b528fd97d62727`，MIT，版权为 Lee Reilly。使用 `neon-glow-stream` 霓虹流图、线性绝对值坐标、浅深双主题与蜜桃粉橙配色；不新增应用运行依赖。数据来自 GitHub 原生公开 Star 历史，不补造缺失记录，也不把历史累计增加数当作完整取消 Star 的净变化账本。
+
+独立 `Star History` 工作流生成 SVG 并保留上游许可，只在 `star-history` 分支保存产物，不触发主线测试或阻塞发版。静态 SVG 发布思路参考 SakuraMedia；未复制其受 PolyForm Noncommercial 约束的生成脚本。
+
 ## 复核字段筛选与文本差异
 
 复核文本差异复用 [jsdiff](https://github.com/kpdecker/jsdiff) 的 `diffChars`，前端精确固定 `diff@9.0.0`（BSD-3-Clause，自带类型），按 Unicode 码点比较并仅展示当前文本中的差异片段。当前值和候选相互对照，尚无当前值时对照其他来源；来源依据只比较同名字段。Peach 保留参照选择、语义高亮与字段筛选，不自行实现通用差异算法；原始候选值、提交契约和 ledger 均不改变。
@@ -126,7 +146,7 @@ GitLab API、CI 认证和 Release 创建复用官方 [glab 1.124.0](https://gitl
 
 GitGud 双存储副本复用同一版 glab 的原生 `packages upload` 与官方 [Packages API](https://docs.gitlab.com/api/packages/)，不另写认证或上传协议。Peach 只核对版本、文件名、大小与 `file_sha256`，复用相同内容并拒绝覆盖冲突；登记未完成最多检查三次。R2 下载表与 GitGud 备用资产链接使用不同的 Release 路径。未新增运行时依赖，离线回归覆盖首次上传、重复执行、内容冲突、未登记终止与双来源链接。
 
-轻量安装器的 R2 优先与 GitHub 同版本回退复用 `standalone_update.download`、既有 HTTPX 和内置工具清单；每个来源分别验证大小与 SHA-256。发布后空缓存验收复用 `smoke_split_update.py` 与实际冻结程序的 `--installer-tools` 入口，不新增下载器或依赖。
+更新与轻量安装器共用 `standalone_update.download`、既有 HTTPX 和内置工具清单；GitHub 与 R2 可切换到同版本、同文件名，每个来源分别按同一份大小与 SHA-256 校验。新安装与同版本更新记录优先 GitHub，R2 保留灾备；工具下载不再另包一层来源重试。发布后空缓存验收复用 `smoke_split_update.py` 与实际冻结程序的 `--installer-tools` 入口，不新增下载器或依赖。
 
 `fetch_release_tools.py` 从固定版本官方发行站读取 SHA-256 清单，仅提取指定二进制。Python 标准库负责制品清单、版本与提交判据，不另实现 GitLab 认证、S3 签名或多段上传协议。Windows 与 macOS 的 CI 入口复用既有测试、构建和独立制品验收脚本。下载后端及费用边界见[运维说明](OPERATIONS.md#gitlab-发布与下载后端)。
 
@@ -533,6 +553,7 @@ OneJAV、Free JAV Torrent 只给种子链接。这类条目经索引器同源的
 - 搜索玻璃用 `glideEase()` 的采样弹簧，`frontend/src/application/search-morph.js` 只管视口边界与轮廓关键帧。
 - 横排滚到头的回弹是 `wireHorizontalScroller` 内的 `edgeBounce`，头像排、厂牌排、新作排、筛选条共用；transitions.dev 的 43 条配方里没有（2026-09-23 核对）。越界位移借 UIScrollView 的橡皮筋公式 `(1 - 1/(x·c/d + 1))·d`，c = 0.55，与 use-gesture（MIT）的 `rubberband` 同一条，回弹走 `--spring-pane`。只抄公式不引依赖：拖动与滚轮归属已由 `wireHorizontalScroller` 判定。新作排自动滚动是同文件的 `wireAutoScroll`。
 - React 横向导航通过 `useHorizontalScroller` 绑定上述共享行为，适用于页签、分段控件、筛选栏和首字跳转；`data-horizontal-scroll` 隐藏原生滚动条，左右渐隐由实际溢出方向决定。容器和子项尺寸、文本及增删变化都会重算，竖向分类列关闭绑定；表格和代码块继续使用覆盖式滑块，不新增依赖。
+- 详情影院模式通过 `data-theater` 改变已有容器的 overflow，共享滚动区观察器同步接管新滚动轴。`data-skeleton` 与 `data-skeleton-tier` 期间隐藏原生滚动条并移除旧轨道，内容恢复后由同一观察器重新接管；首页与资料页共用的新作占位在整条横向容器上标记 `data-skeleton="feed/new"`。保留原占位尺寸与排版，不为占位另建滚动组件。
 - 管理页头及 `manageHeaderSkeletonHtml` 共用一级导航、面包屑、页面标题的顺序，页内分类放在标题之后；管理条保持跨模块导航，面包屑保留上级链接与当前页语义。
 - 浮层筛选首页是页面内组件 `catalog-filter`，资料页是 `entity-filter`，共用 `FilterGlassRows` 两排、交集条与排序键，滑动玻璃走 `use-view-glide.ts`。外框管玻璃与吸顶，壳管查询状态和取数，岛只画、动作回壳，按下态在发请求前由壳经 `updateManagedRoute` 推到；身份与观看状态的组合沿用 `/api/items`。
 - `web/board.css` 共用正式页面结构。首启、登录与错误三页是独立页面包 `/dist/peach-pages.js` 里的 React 页，服务端只吐 `web_entry.page_shell()` 那一张薄壳，外框是 `frontend/src/react/pages/auth-card.tsx`，SPA 外壳之外的新页面挂进同一个包。
